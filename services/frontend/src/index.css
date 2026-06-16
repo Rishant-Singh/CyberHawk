@@ -1,0 +1,274 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* ── Global Reset & Base ───────────────────────────────────────────────────── */
+@layer base {
+  * { box-sizing: border-box; }
+  
+  body {
+    @apply bg-cyber-black text-white font-mono;
+    background-image: 
+      linear-gradient(rgba(0, 255, 157, 0.015) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(0, 255, 157, 0.015) 1px, transparent 1px);
+    background-size: 40px 40px;
+    font-family: 'JetBrains Mono', monospace;
+  }
+}
+
+/* ── Cyber Design System ───────────────────────────────────────────────────── */
+@layer components {
+
+  /* Panel — frosted dark card */
+  .cyber-panel {
+    @apply bg-cyber-panel border border-cyber-border rounded-lg relative overflow-hidden;
+    background: linear-gradient(135deg, rgba(13, 20, 36, 0.95) 0%, rgba(10, 14, 26, 0.95) 100%);
+  }
+  
+  .cyber-panel::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    border-radius: inherit;
+    background: linear-gradient(
+      135deg,
+      rgba(0, 255, 157, 0.03) 0%,
+      transparent 50%,
+      rgba(0, 212, 255, 0.02) 100%
+    );
+    pointer-events: none;
+  }
+
+  /* Panel header with scanline accent */
+  .cyber-panel-header {
+    @apply px-4 py-3 border-b border-cyber-border flex items-center gap-2;
+    background: linear-gradient(90deg, rgba(0, 255, 157, 0.06) 0%, transparent 100%);
+  }
+
+  /* Neon button */
+  .cyber-btn {
+    @apply px-4 py-2 rounded text-sm font-semibold transition-all duration-200 
+           border border-transparent cursor-pointer;
+    font-family: 'Orbitron', sans-serif;
+    letter-spacing: 0.05em;
+  }
+
+  .cyber-btn-green {
+    @apply cyber-btn text-cyber-black bg-cyber-green border-cyber-green;
+    box-shadow: 0 0 12px rgba(0, 255, 157, 0.4);
+  }
+  .cyber-btn-green:hover {
+    box-shadow: 0 0 24px rgba(0, 255, 157, 0.7);
+    @apply brightness-110;
+  }
+
+  .cyber-btn-outline {
+    @apply cyber-btn text-cyber-green border-cyber-green bg-transparent;
+  }
+  .cyber-btn-outline:hover {
+    @apply bg-cyber-green text-cyber-black;
+    box-shadow: 0 0 16px rgba(0, 255, 157, 0.5);
+  }
+
+  .cyber-btn-red {
+    @apply cyber-btn text-cyber-black bg-cyber-red border-cyber-red;
+    box-shadow: 0 0 12px rgba(255, 45, 85, 0.4);
+  }
+
+  /* Input fields */
+  .cyber-input {
+    @apply w-full px-3 py-2 rounded bg-cyber-darker border border-cyber-border 
+           text-white text-sm outline-none transition-all duration-200;
+    font-family: 'JetBrains Mono', monospace;
+  }
+  .cyber-input:focus {
+    @apply border-cyber-green;
+    box-shadow: 0 0 0 1px rgba(0, 255, 157, 0.3), 0 0 12px rgba(0, 255, 157, 0.1);
+  }
+  .cyber-input::placeholder { @apply text-gray-600; }
+
+  /* Status badge */
+  .status-badge {
+    @apply inline-flex items-center gap-1 px-2 py-0.5 rounded text-xs font-semibold;
+    font-family: 'Orbitron', sans-serif;
+    letter-spacing: 0.08em;
+  }
+
+  .badge-critical {
+    @apply status-badge bg-red-900/40 text-cyber-red border border-cyber-red/40;
+    text-shadow: 0 0 8px rgba(255, 45, 85, 0.8);
+  }
+  .badge-high {
+    @apply status-badge bg-orange-900/40 text-orange-400 border border-orange-500/40;
+  }
+  .badge-medium {
+    @apply status-badge bg-amber-900/40 text-cyber-amber border border-amber-500/40;
+  }
+  .badge-low {
+    @apply status-badge bg-blue-900/40 text-blue-400 border border-blue-500/40;
+  }
+  .badge-info {
+    @apply status-badge bg-gray-800/40 text-gray-400 border border-gray-600/40;
+  }
+
+  /* Glowing text */
+  .text-glow-green {
+    color: #00ff9d;
+    text-shadow: 0 0 10px rgba(0, 255, 157, 0.7), 0 0 20px rgba(0, 255, 157, 0.3);
+  }
+  .text-glow-red {
+    color: #ff2d55;
+    text-shadow: 0 0 10px rgba(255, 45, 85, 0.7), 0 0 20px rgba(255, 45, 85, 0.3);
+  }
+  .text-glow-amber {
+    color: #ffaa00;
+    text-shadow: 0 0 10px rgba(255, 170, 0, 0.7), 0 0 20px rgba(255, 170, 0, 0.3);
+  }
+  .text-glow-cyan {
+    color: #00d4ff;
+    text-shadow: 0 0 10px rgba(0, 212, 255, 0.7), 0 0 20px rgba(0, 212, 255, 0.3);
+  }
+
+  /* Scanline overlay */
+  .scanline {
+    position: fixed;
+    top: -100%;
+    left: 0;
+    width: 100%;
+    height: 2px;
+    background: linear-gradient(transparent, rgba(0, 255, 157, 0.06), transparent);
+    animation: scan 8s linear infinite;
+    pointer-events: none;
+    z-index: 9999;
+  }
+
+  /* Corner brackets (cyber aesthetic) */
+  .cyber-corners {
+    position: relative;
+  }
+  .cyber-corners::before,
+  .cyber-corners::after {
+    content: '';
+    position: absolute;
+    width: 12px;
+    height: 12px;
+    border-color: rgba(0, 255, 157, 0.5);
+    border-style: solid;
+  }
+  .cyber-corners::before {
+    top: 0; left: 0;
+    border-width: 1px 0 0 1px;
+  }
+  .cyber-corners::after {
+    bottom: 0; right: 0;
+    border-width: 0 1px 1px 0;
+  }
+
+  /* Pulsing indicator dot */
+  .pulse-dot {
+    @apply relative inline-block w-2 h-2 rounded-full;
+  }
+  .pulse-dot::after {
+    content: '';
+    @apply absolute inset-0 rounded-full animate-ping;
+    animation-duration: 1.5s;
+  }
+  .pulse-dot-green { @apply bg-cyber-green; }
+  .pulse-dot-green::after { @apply bg-cyber-green opacity-60; }
+  .pulse-dot-red { @apply bg-cyber-red; }
+  .pulse-dot-red::after { @apply bg-cyber-red opacity-60; }
+  .pulse-dot-amber { @apply bg-cyber-amber; }
+  .pulse-dot-amber::after { @apply bg-cyber-amber opacity-60; }
+
+  /* Number counter */
+  .stat-number {
+    font-family: 'Orbitron', sans-serif;
+    font-weight: 700;
+    font-size: 1.75rem;
+    letter-spacing: 0.05em;
+  }
+
+  /* Horizontal divider */
+  .cyber-divider {
+    @apply border-t border-cyber-border my-3;
+    background: linear-gradient(90deg, transparent, rgba(0, 255, 157, 0.1), transparent);
+  }
+}
+
+/* ── Custom Scrollbar ───────────────────────────────────────────────────────── */
+::-webkit-scrollbar { width: 4px; }
+::-webkit-scrollbar-track { background: #0a0e1a; }
+::-webkit-scrollbar-thumb { background: #1a2540; border-radius: 2px; }
+::-webkit-scrollbar-thumb:hover { background: rgba(0, 255, 157, 0.3); }
+
+/* ── D3 Tooltip ─────────────────────────────────────────────────────────────── */
+.d3-tooltip {
+  position: fixed;
+  padding: 8px 12px;
+  background: rgba(13, 20, 36, 0.96);
+  border: 1px solid rgba(0, 255, 157, 0.3);
+  border-radius: 6px;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 12px;
+  color: #e0e8ff;
+  pointer-events: none;
+  z-index: 9999;
+  white-space: nowrap;
+  box-shadow: 0 4px 24px rgba(0, 0, 0, 0.6), 0 0 8px rgba(0, 255, 157, 0.1);
+  backdrop-filter: blur(8px);
+}
+
+/* ── Alert Feed Animations ──────────────────────────────────────────────────── */
+.alert-item-enter {
+  animation: alertSlideIn 0.4s ease-out;
+}
+
+@keyframes alertSlideIn {
+  from { transform: translateX(100%); opacity: 0; }
+  to { transform: translateX(0); opacity: 1; }
+}
+
+/* ── Radar Pulse ────────────────────────────────────────────────────────────── */
+@keyframes radarRing {
+  0% { transform: scale(0); opacity: 0.8; }
+  100% { transform: scale(1); opacity: 0; }
+}
+
+.radar-ring {
+  animation: radarRing 2s ease-out infinite;
+}
+
+/* ── Threat Score Gauge ─────────────────────────────────────────────────────── */
+.gauge-track { stroke: #1a2540; }
+.gauge-fill-critical { stroke: #ff2d55; filter: drop-shadow(0 0 6px #ff2d55); }
+.gauge-fill-high { stroke: #ff6b35; filter: drop-shadow(0 0 6px #ff6b35); }
+.gauge-fill-medium { stroke: #ffaa00; filter: drop-shadow(0 0 6px #ffaa00); }
+.gauge-fill-low { stroke: #00d4ff; filter: drop-shadow(0 0 6px #00d4ff); }
+.gauge-fill-info { stroke: #00ff9d; filter: drop-shadow(0 0 6px #00ff9d); }
+
+/* ── Network Graph ──────────────────────────────────────────────────────────── */
+.node-critical { fill: #ff2d55; filter: drop-shadow(0 0 6px #ff2d55aa); }
+.node-high { fill: #ff6b35; filter: drop-shadow(0 0 4px #ff6b35aa); }
+.node-medium { fill: #ffaa00; filter: drop-shadow(0 0 4px #ffaa00aa); }
+.node-low { fill: #00d4ff; filter: drop-shadow(0 0 3px #00d4ffaa); }
+.node-info { fill: #00ff9d; filter: drop-shadow(0 0 3px #00ff9daa); }
+
+.link-critical { stroke: rgba(255, 45, 85, 0.6); }
+.link-high { stroke: rgba(255, 107, 53, 0.5); }
+.link-medium { stroke: rgba(255, 170, 0, 0.4); }
+.link-low { stroke: rgba(0, 212, 255, 0.3); }
+.link-info { stroke: rgba(0, 255, 157, 0.2); }
+
+/* ── Login Page ─────────────────────────────────────────────────────────────── */
+.login-bg {
+  background: 
+    radial-gradient(ellipse at 20% 50%, rgba(0, 255, 157, 0.05) 0%, transparent 50%),
+    radial-gradient(ellipse at 80% 20%, rgba(0, 212, 255, 0.05) 0%, transparent 50%),
+    radial-gradient(ellipse at 50% 80%, rgba(189, 0, 255, 0.04) 0%, transparent 50%),
+    linear-gradient(135deg, #050810 0%, #0a0e1a 50%, #050810 100%);
+}
+
+@keyframes scan {
+  0% { top: -2%; }
+  100% { top: 102%; }
+}

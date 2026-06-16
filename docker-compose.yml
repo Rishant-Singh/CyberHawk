@@ -1,0 +1,248 @@
+
+networks:
+  cti_net:
+    driver: bridge
+
+volumes:
+  postgres_data:
+  elasticsearch_data:
+  kafka_data:
+  zookeeper_data:
+  ml_models:
+
+services:
+  # ─────────────────────────────────────────
+  # ZOOKEEPER
+  # ─────────────────────────────────────────
+  zookeeper:
+    image: confluentinc/cp-zookeeper:7.5.0
+    container_name: cti_zookeeper
+    restart: unless-stopped
+    environment:
+      ZOOKEEPER_CLIENT_PORT: 2181
+      ZOOKEEPER_TICK_TIME: 2000
+    volumes:
+      - zookeeper_data:/var/lib/zookeeper/data
+    networks:
+      - cti_net
+    healthcheck:
+      test: ["CMD", "nc", "-z", "localhost", "2181"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # ─────────────────────────────────────────
+  # KAFKA BROKER
+  # ─────────────────────────────────────────
+  kafka:
+    image: confluentinc/cp-kafka:7.5.0
+    container_name: cti_kafka
+    restart: unless-stopped
+    depends_on:
+      zookeeper:
+        condition: service_healthy
+    environment:
+      KAFKA_BROKER_ID: 1
+      KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181
+      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: PLAINTEXT:PLAINTEXT,PLAINTEXT_HOST:PLAINTEXT
+      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://kafka:29092,PLAINTEXT_HOST://localhost:9092
+      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
+      KAFKA_AUTO_CREATE_TOPICS_ENABLE: "true"
+      KAFKA_LOG_RETENTION_HOURS: 24
+    volumes:
+      - kafka_data:/var/lib/kafka/data
+    ports:
+      - "9092:9092"
+    networks:
+      - cti_net
+    healthcheck:
+      test: ["CMD", "kafka-broker-api-versions", "--bootstrap-server", "localhost:9092"]
+      interval: 15s
+      timeout: 10s
+      retries: 10
+
+  # ─────────────────────────────────────────
+  # KAFKA UI
+  # ─────────────────────────────────────────
+  kafka-ui:
+    image: provectuslabs/kafka-ui:latest
+    container_name: cti_kafka_ui
+    restart: unless-stopped
+    depends_on:
+      - kafka
+    ports:
+      - "8090:8080"
+    environment:
+      KAFKA_CLUSTERS_0_NAME: cti-cluster
+      KAFKA_CLUSTERS_0_BOOTSTRAPSERVERS: kafka:29092
+    networks:
+      - cti_net
+
+  # ─────────────────────────────────────────
+  # ELASTICSEARCH
+  # ─────────────────────────────────────────
+  elasticsearch:
+    image: docker.elastic.co/elasticsearch/elasticsearch:8.11.0
+    container_name: cti_elasticsearch
+    restart: unless-stopped
+    environment:
+      - discovery.type=single-node
+      - xpack.security.enabled=false
+      - ES_JAVA_OPTS=-Xms512m -Xmx512m
+      - cluster.name=cti-cluster
+    volumes:
+      - elasticsearch_data:/usr/share/elasticsearch/data
+    ports:
+      - "9200:9200"
+    networks:
+      - cti_net
+    healthcheck:
+      test: ["CMD-SHELL", "curl -sf http://localhost:9200/_cluster/health | grep -qE '\"status\":\"(green|yellow)\"'"]
+      interval: 20s
+      timeout: 10s
+      retries: 10
+
+  # ─────────────────────────────────────────
+  # POSTGRESQL
+  # ─────────────────────────────────────────
+  postgres:
+    image: postgres:15-alpine
+    container_name: cti_postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-cti_user}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-cti_secure_pass}
+      POSTGRES_DB: ${POSTGRES_DB:-cti_db}
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    ports:
+      - "5432:5432"
+    networks:
+      - cti_net
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-cti_user} -d ${POSTGRES_DB:-cti_db}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # ─────────────────────────────────────────
+  # ML ENGINE
+  # ─────────────────────────────────────────
+  ml-engine:
+    build:
+      context: ./services/ml-engine
+      dockerfile: Dockerfile
+    container_name: cti_ml_engine
+    restart: unless-stopped
+    environment:
+      KAFKA_BOOTSTRAP_SERVERS: kafka:29092
+      KAFKA_RAW_TOPIC: raw-logs
+      KAFKA_SCORED_TOPIC: scored-threats
+      KAFKA_GROUP_ID: cti-ml-group
+      POSTGRES_URL: postgresql+asyncpg://cti_user:cti_secure_pass_change_me@postgres:5432/cti_db
+      ELASTICSEARCH_URL: http://elasticsearch:9200
+      MODELS_DIR: /app/models/saved
+      ANOMALY_THRESHOLD: "0.65"
+    volumes:
+      - ml_models:/app/models/saved
+    ports:
+      - "8001:8001"
+    depends_on:
+      kafka:
+        condition: service_healthy
+      postgres:
+        condition: service_healthy
+      elasticsearch:
+        condition: service_healthy
+    networks:
+      - cti_net
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8001/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 10
+      start_period: 120s
+
+  # ─────────────────────────────────────────
+  # LOG INGESTION
+  # ─────────────────────────────────────────
+  ingestion:
+    build:
+      context: ./services/ingestion
+      dockerfile: Dockerfile
+    container_name: cti_ingestion
+    restart: unless-stopped
+    environment:
+      KAFKA_BOOTSTRAP_SERVERS: kafka:29092
+      KAFKA_RAW_TOPIC: raw-logs
+      KAFKA_GROUP_ID: cti-consumer-group
+      ML_ENGINE_URL: http://ml-engine:8001/infer
+      LOG_RATE_PER_SECOND: ${LOG_RATE_PER_SECOND:-5}
+      MALICIOUS_RATIO: ${MALICIOUS_RATIO:-0.15}
+      SUSPICIOUS_RATIO: ${SUSPICIOUS_RATIO:-0.10}
+      CONSUMER_BATCH_SIZE: "10"
+    depends_on:
+      kafka:
+        condition: service_healthy
+      ml-engine:
+        condition: service_healthy
+    networks:
+      - cti_net
+
+  # ─────────────────────────────────────────
+  # BACKEND API (FastAPI)
+  # ─────────────────────────────────────────
+  backend:
+    build:
+      context: ./services/backend
+      dockerfile: Dockerfile
+    container_name: cti_backend
+    restart: unless-stopped
+    environment:
+      POSTGRES_URL: postgresql+asyncpg://cti_user:cti_secure_pass_change_me@postgres:5432/cti_db
+      ELASTICSEARCH_URL: http://elasticsearch:9200
+      KAFKA_BOOTSTRAP_SERVERS: kafka:29092
+      KAFKA_SCORED_TOPIC: scored-threats
+      KAFKA_GROUP_ID: cti-backend-group
+      JWT_SECRET_KEY: ${JWT_SECRET_KEY:-super-secret-jwt-key-change-in-production}
+      JWT_ALGORITHM: HS256
+      ACCESS_TOKEN_EXPIRE_MINUTES: "60"
+      CORS_ORIGINS: '["http://localhost:3000","http://frontend:3000"]'
+      ADMIN_EMAIL: ${ADMIN_EMAIL:-admin@cti.local}
+      ADMIN_PASSWORD: ${ADMIN_PASSWORD:-Admin@CTI2024!}
+      ADMIN_USERNAME: ${ADMIN_USERNAME:-admin}
+    ports:
+      - "8000:8000"
+    depends_on:
+      postgres:
+        condition: service_healthy
+      elasticsearch:
+        condition: service_healthy
+      kafka:
+        condition: service_healthy
+    networks:
+      - cti_net
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/api/health/ping"]
+      interval: 15s
+      timeout: 5s
+      retries: 5
+
+  # ─────────────────────────────────────────
+  # FRONTEND (React + Nginx)
+  # ─────────────────────────────────────────
+  frontend:
+    build:
+      context: ./services/frontend
+      dockerfile: Dockerfile
+      args:
+        VITE_API_URL: http://localhost:8000
+        VITE_WS_URL: ws://localhost:8000
+    container_name: cti_frontend
+    restart: unless-stopped
+    ports:
+      - "3000:80"
+    depends_on:
+      - backend
+    networks:
+      - cti_net

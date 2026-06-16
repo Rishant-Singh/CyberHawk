@@ -1,0 +1,282 @@
+{
+  "version": "14.0",
+  "techniques": [
+    {
+      "id": "T1190",
+      "name": "Exploit Public-Facing Application",
+      "tactic": "Initial Access",
+      "description": "Adversaries may attempt to exploit a weakness in an Internet-facing host or system to gain access.",
+      "indicators": ["unusual port scanning", "repeated auth failures", "injection patterns"],
+      "severity": "HIGH",
+      "mitigation": "Patch vulnerable software, implement WAF, restrict exposed services"
+    },
+    {
+      "id": "T1078",
+      "name": "Valid Accounts",
+      "tactic": "Defense Evasion / Persistence",
+      "description": "Adversaries may obtain and abuse credentials of existing accounts as a means of gaining access.",
+      "indicators": ["off-hours login", "impossible travel", "credential stuffing patterns"],
+      "severity": "HIGH",
+      "mitigation": "MFA enforcement, anomalous login alerting, privileged access management"
+    },
+    {
+      "id": "T1059",
+      "name": "Command and Scripting Interpreter",
+      "tactic": "Execution",
+      "description": "Adversaries may abuse command and script interpreters to execute commands and scripts.",
+      "indicators": ["powershell anomalies", "script execution", "encoded commands"],
+      "severity": "HIGH",
+      "mitigation": "Script block logging, constrained language mode, application control"
+    },
+    {
+      "id": "T1566",
+      "name": "Phishing",
+      "tactic": "Initial Access",
+      "description": "Adversaries may send phishing messages to gain access to victim systems.",
+      "indicators": ["suspicious email attachments", "malicious links", "spoofed domains"],
+      "severity": "MEDIUM",
+      "mitigation": "Email filtering, user awareness training, link protection"
+    },
+    {
+      "id": "T1133",
+      "name": "External Remote Services",
+      "tactic": "Initial Access / Persistence",
+      "description": "Adversaries may leverage external-facing remote services to initially access and persist within a victim network.",
+      "indicators": ["VPN anomalies", "RDP from unusual location", "SSH brute force"],
+      "severity": "HIGH",
+      "mitigation": "MFA on remote services, geo-blocking, network segmentation"
+    },
+    {
+      "id": "T1046",
+      "name": "Network Service Discovery",
+      "tactic": "Discovery",
+      "description": "Adversaries may attempt to get a listing of services running on remote hosts.",
+      "indicators": ["port scanning", "high connection rate", "SYN flood patterns"],
+      "severity": "MEDIUM",
+      "mitigation": "IDS/IPS rules, rate limiting, firewall egress filtering"
+    },
+    {
+      "id": "T1110",
+      "name": "Brute Force",
+      "tactic": "Credential Access",
+      "description": "Adversaries may use brute force techniques to gain access to accounts.",
+      "indicators": ["repeated login failures", "password spraying", "dictionary attack patterns"],
+      "severity": "HIGH",
+      "mitigation": "Account lockout policies, CAPTCHA, rate limiting authentication attempts"
+    },
+    {
+      "id": "T1071",
+      "name": "Application Layer Protocol",
+      "tactic": "Command and Control",
+      "description": "Adversaries may communicate using application layer protocols to avoid detection.",
+      "indicators": ["unusual HTTP patterns", "DNS tunneling", "HTTPS to unusual destinations"],
+      "severity": "HIGH",
+      "mitigation": "Deep packet inspection, DNS monitoring, network traffic analysis"
+    },
+    {
+      "id": "T1486",
+      "name": "Data Encrypted for Impact",
+      "tactic": "Impact",
+      "description": "Adversaries may encrypt data on target systems to interrupt availability.",
+      "indicators": ["mass file encryption", "ransomware signatures", "shadow copy deletion"],
+      "severity": "CRITICAL",
+      "mitigation": "Offline backups, EDR solutions, network segmentation to limit spread"
+    },
+    {
+      "id": "T1041",
+      "name": "Exfiltration Over C2 Channel",
+      "tactic": "Exfiltration",
+      "description": "Adversaries may steal data by exfiltrating it over an existing C2 channel.",
+      "indicators": ["large outbound transfers", "data staging", "unusual upload volumes"],
+      "severity": "CRITICAL",
+      "mitigation": "DLP solutions, egress filtering, anomalous bandwidth alerting"
+    },
+    {
+      "id": "T1562",
+      "name": "Impair Defenses",
+      "tactic": "Defense Evasion",
+      "description": "Adversaries may maliciously modify components of a victim environment to hinder security controls.",
+      "indicators": ["antivirus disabled", "firewall rule changes", "log clearing"],
+      "severity": "HIGH",
+      "mitigation": "Integrity monitoring, tamper protection on security tools"
+    },
+    {
+      "id": "T1055",
+      "name": "Process Injection",
+      "tactic": "Defense Evasion / Privilege Escalation",
+      "description": "Adversaries may inject code into processes to evade process-based defenses.",
+      "indicators": ["unusual process memory writes", "hollowed processes", "DLL injection"],
+      "severity": "CRITICAL",
+      "mitigation": "EDR behavioral monitoring, kernel-level protection, process isolation"
+    },
+    {
+      "id": "T1021",
+      "name": "Remote Services",
+      "tactic": "Lateral Movement",
+      "description": "Adversaries may use valid accounts to log into a service accepting remote connections.",
+      "indicators": ["lateral RDP/SMB", "admin share access", "WMI remote execution"],
+      "severity": "HIGH",
+      "mitigation": "Network segmentation, disable unnecessary remote services, PAM"
+    },
+    {
+      "id": "T1083",
+      "name": "File and Directory Discovery",
+      "tactic": "Discovery",
+      "description": "Adversaries may enumerate files and directories on a system.",
+      "indicators": ["mass file enumeration", "sensitive directory access", "recursive directory listing"],
+      "severity": "LOW",
+      "mitigation": "Audit file access events, least privilege file permissions"
+    },
+    {
+      "id": "T1027",
+      "name": "Obfuscated Files or Information",
+      "tactic": "Defense Evasion",
+      "description": "Adversaries may attempt to make an executable or file difficult to discover or analyze.",
+      "indicators": ["encoded payloads", "packed executables", "steganography"],
+      "severity": "MEDIUM",
+      "mitigation": "Static analysis tools, sandboxing, threat intelligence feeds"
+    },
+    {
+      "id": "T1098",
+      "name": "Account Manipulation",
+      "tactic": "Persistence",
+      "description": "Adversaries may manipulate accounts to maintain or elevate access.",
+      "indicators": ["privilege escalation", "new admin accounts", "SSH key modification"],
+      "severity": "HIGH",
+      "mitigation": "Privileged account monitoring, directory change alerting"
+    },
+    {
+      "id": "T1105",
+      "name": "Ingress Tool Transfer",
+      "tactic": "Command and Control",
+      "description": "Adversaries may transfer tools from an external system into a compromised environment.",
+      "indicators": ["unusual file downloads", "tool staging", "LOLBin usage"],
+      "severity": "MEDIUM",
+      "mitigation": "Application whitelisting, egress filtering, proxy inspection"
+    },
+    {
+      "id": "T1003",
+      "name": "OS Credential Dumping",
+      "tactic": "Credential Access",
+      "description": "Adversaries may attempt to dump credentials to obtain account login information.",
+      "indicators": ["LSASS access", "SAM database access", "credential dumping tools"],
+      "severity": "CRITICAL",
+      "mitigation": "Credential Guard, Protected Users group, EDR coverage"
+    },
+    {
+      "id": "T1548",
+      "name": "Abuse Elevation Control Mechanism",
+      "tactic": "Privilege Escalation",
+      "description": "Adversaries may circumvent mechanisms designed to control privilege elevation.",
+      "indicators": ["UAC bypass", "sudo abuse", "SUID exploitation"],
+      "severity": "HIGH",
+      "mitigation": "UAC enforcement, privilege monitoring, least privilege principle"
+    },
+    {
+      "id": "T1573",
+      "name": "Encrypted Channel",
+      "tactic": "Command and Control",
+      "description": "Adversaries may employ a known encryption algorithm to conceal C2 traffic.",
+      "indicators": ["unusual TLS certificates", "non-standard encryption", "Tor usage"],
+      "severity": "HIGH",
+      "mitigation": "SSL inspection, certificate pinning monitoring, network anomaly detection"
+    },
+    {
+      "id": "T1018",
+      "name": "Remote System Discovery",
+      "tactic": "Discovery",
+      "description": "Adversaries may attempt to get a listing of other systems by IP address, hostname, or other logical identifier on a network.",
+      "indicators": ["ARP scanning", "ping sweeps", "LDAP queries"],
+      "severity": "LOW",
+      "mitigation": "Network monitoring, disable unnecessary discovery protocols"
+    },
+    {
+      "id": "T1070",
+      "name": "Indicator Removal",
+      "tactic": "Defense Evasion",
+      "description": "Adversaries may delete or modify artifacts generated on a host system to remove evidence of their presence.",
+      "indicators": ["log deletion", "timestomping", "artifact wiping"],
+      "severity": "HIGH",
+      "mitigation": "Centralized logging, WORM storage for logs, integrity monitoring"
+    },
+    {
+      "id": "T1135",
+      "name": "Network Share Discovery",
+      "tactic": "Discovery",
+      "description": "Adversaries may look for folders and drives shared on remote systems as a means of identifying potential targets.",
+      "indicators": ["SMB enumeration", "net view commands", "share scanning"],
+      "severity": "LOW",
+      "mitigation": "Disable unnecessary shares, monitor share access, network segmentation"
+    },
+    {
+      "id": "T1049",
+      "name": "System Network Connections Discovery",
+      "tactic": "Discovery",
+      "description": "Adversaries may attempt to get a listing of network connections to or from a compromised system.",
+      "indicators": ["netstat anomalies", "connection enumeration", "socket inspection"],
+      "severity": "LOW",
+      "mitigation": "Limit discovery tool execution, behavioral monitoring"
+    },
+    {
+      "id": "T1053",
+      "name": "Scheduled Task/Job",
+      "tactic": "Execution / Persistence",
+      "description": "Adversaries may abuse task scheduling functionality to facilitate initial or recurring execution of malicious code.",
+      "indicators": ["new scheduled tasks", "cron job modifications", "at command usage"],
+      "severity": "MEDIUM",
+      "mitigation": "Scheduled task monitoring, least privilege, integrity checks"
+    },
+    {
+      "id": "T1136",
+      "name": "Create Account",
+      "tactic": "Persistence",
+      "description": "Adversaries may create an account to maintain access to victim systems.",
+      "indicators": ["new user creation", "service account anomalies", "backdoor accounts"],
+      "severity": "HIGH",
+      "mitigation": "Account creation alerting, regular account audits, PAM"
+    },
+    {
+      "id": "T1588",
+      "name": "Obtain Capabilities",
+      "tactic": "Resource Development",
+      "description": "Adversaries may buy and/or steal capabilities that can be used during targeting.",
+      "indicators": ["tool download from GitHub", "exploit framework usage", "RAT signatures"],
+      "severity": "MEDIUM",
+      "mitigation": "Threat intelligence integration, file hash monitoring, sandbox analysis"
+    },
+    {
+      "id": "T1114",
+      "name": "Email Collection",
+      "tactic": "Collection",
+      "description": "Adversaries may target user email to collect sensitive information.",
+      "indicators": ["IMAP/POP3 anomalies", "bulk email export", "mail rule modifications"],
+      "severity": "MEDIUM",
+      "mitigation": "Email access monitoring, DLP on email systems, MFA"
+    },
+    {
+      "id": "T1082",
+      "name": "System Information Discovery",
+      "tactic": "Discovery",
+      "description": "Adversaries may attempt to get detailed information about a system's OS and hardware.",
+      "indicators": ["system enumeration commands", "registry queries", "hardware fingerprinting"],
+      "severity": "LOW",
+      "mitigation": "Behavioral analytics, limit WMI usage, honeypot deployment"
+    },
+    {
+      "id": "T1547",
+      "name": "Boot or Logon Autostart Execution",
+      "tactic": "Persistence / Privilege Escalation",
+      "description": "Adversaries may configure system settings to execute programs during system boot or logon.",
+      "indicators": ["registry run key changes", "startup folder modifications", "bootkit signatures"],
+      "severity": "HIGH",
+      "mitigation": "Integrity monitoring on autostart locations, Secure Boot, boot logging"
+    }
+  ],
+  "tactics": [
+    "Reconnaissance", "Resource Development", "Initial Access",
+    "Execution", "Persistence", "Privilege Escalation",
+    "Defense Evasion", "Credential Access", "Discovery",
+    "Lateral Movement", "Collection", "Command and Control",
+    "Exfiltration", "Impact"
+  ]
+}
