@@ -127,3 +127,97 @@ async def get_network_graph(
         "nodes": list(nodes.values()),
         "edges": edges[:200],  # Limit edges for performance
     }
+
+
+@router.get("/map-events")
+async def get_map_events(
+    threat_level: Optional[str] = Query(None, description="CRITICAL | HIGH | MEDIUM | LOW"),
+    environment: Optional[str] = Query(None, description="OBSERVED | LAB | SIMULATED | ALL"),
+    hours: int = Query(24, ge=1, le=720),
+    limit: int = Query(150, ge=10, le=500),
+    db: AsyncSession = Depends(get_db),
+    _=Depends(get_current_user),
+):
+    """
+    Get geographic threat events with valid coordinates for the Global Threat Map.
+    Supports severity and environment filtering.
+    """
+    from datetime import datetime, timedelta, timezone
+    from models.asset import Asset
+    from services.geoip_service import is_private_ip
+
+    since = datetime.now(timezone.utc) - timedelta(hours=hours)
+
+    q = (
+        select(Alert)
+        .where(
+            Alert.timestamp >= since,
+            Alert.geo_lat.is_not(None),
+            Alert.geo_lon.is_not(None),
+        )
+        .order_by(desc(Alert.timestamp))
+        .limit(limit)
+    )
+
+    if threat_level and threat_level.upper() != "ALL":
+        q = q.where(Alert.threat_level == threat_level.upper())
+
+    if environment and environment.upper() != "ALL":
+        q = q.where(Alert.environment == environment.upper())
+
+    result = await db.execute(q)
+    alerts = result.scalars().all()
+
+    # Asset lookup cache for target names
+    all_assets = (await db.execute(select(Asset))).scalars().all()
+    asset_map = {a.ip_address: a for a in all_assets}
+
+    events = []
+    for a in alerts:
+        target_asset = asset_map.get(a.dst_ip) if a.dst_ip else None
+        events.append({
+            "id": a.id,
+            "timestamp": a.timestamp.isoformat(),
+            "src_ip": a.src_ip,
+            "dst_ip": a.dst_ip,
+            "threat_level": a.threat_level,
+            "threat_score": a.threat_score,
+            "classification": a.classification,
+            "attack_type": a.attack_type,
+            "mitre_technique": a.mitre_technique,
+            "geo_country": a.geo_country,
+            "geo_city": a.geo_city,
+            "geo_lat": a.geo_lat,
+            "geo_lon": a.geo_lon,
+            "accuracy_radius_km": a.accuracy_radius_km,
+            "environment": a.environment,
+            "detection_source": a.detection_source,
+            "explanation": a.explanation,
+            "target_asset_name": target_asset.hostname if target_asset else None,
+            "target_asset_criticality": target_asset.criticality if target_asset else None,
+            "target_asset_location": target_asset.location if target_asset else ("Internal Lab" if is_private_ip(a.dst_ip) else None),
+        })
+
+    return events
+
+
+@router.get("/geolocation/{ip}")
+async def get_ip_geolocation(
+    ip: str,
+    db: AsyncSession = Depends(get_db),
+    _=Depends(get_current_user),
+):
+    """
+    Resolve IP geolocation metadata.
+    RFC1918 private IPs are shielded and resolved against internal asset inventory.
+    """
+    from services.geoip_service import resolve_ip_location
+    from models.asset import Asset
+
+    direct_asset = (await db.execute(
+        select(Asset).where(Asset.ip_address == ip.strip())
+    )).scalars().first()
+
+    asset_ctx = {"hostname": direct_asset.hostname, "location": direct_asset.location} if direct_asset else None
+    return await resolve_ip_location(ip, asset_context=asset_ctx)
+

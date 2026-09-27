@@ -13,6 +13,19 @@ export default defineConfig({
       },
     },
   },
+  build: {
+    minify: false,
+    rollupOptions: {
+      output: {
+        manualChunks: {
+          'vendor-react': ['react', 'react-dom', 'react-router-dom', 'zustand'],
+          'vendor-leaflet': ['leaflet', 'react-leaflet'],
+          'vendor-charts': ['recharts'],
+          'vendor-icons': ['lucide-react'],
+        },
+      },
+    },
+  },
   define: {
     __API_URL__: JSON.stringify(process.env.VITE_API_URL || 'http://localhost:8000'),
     __WS_URL__: JSON.stringify(process.env.VITE_WS_URL || 'ws://localhost:8000'),

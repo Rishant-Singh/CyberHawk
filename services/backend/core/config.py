@@ -41,6 +41,11 @@ class Settings(BaseSettings):
     ADMIN_PASSWORD: str = "Admin@CTI2024!"
     ADMIN_USERNAME: str = "admin"
 
+    # AI / External APIs (optional)
+    GEMINI_API_KEY: str = ""
+    VIRUSTOTAL_API_KEY: str = ""
+    ABUSEIPDB_API_KEY: str = ""
+
     class Config:
         env_file = ".env"
         case_sensitive = True

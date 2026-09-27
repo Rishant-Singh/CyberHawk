@@ -5,6 +5,13 @@ import Login from './components/auth/Login.jsx'
 import CommandCenter from './components/layout/CommandCenter.jsx'
 import Dashboard from './pages/Dashboard.jsx'
 import Alerts from './pages/Alerts.jsx'
+import AttackMap from './pages/AttackMap.jsx'
+import IOCSearch from './pages/IOCSearch.jsx'
+import MitreMatrix from './pages/MitreMatrix.jsx'
+import SOCAnalytics from './pages/SOCAnalytics.jsx'
+import Incidents from './pages/Incidents.jsx'
+import Assets from './pages/Assets.jsx'
+import AIAssistant from './pages/AIAssistant.jsx'
 
 function RequireAuth({ children }) {
   const isAuthenticated = useThreatStore((s) => s.isAuthenticated)
@@ -41,6 +48,13 @@ export default function App() {
         >
           <Route index element={<Dashboard />} />
           <Route path="alerts" element={<Alerts />} />
+          <Route path="map" element={<AttackMap />} />
+          <Route path="ioc" element={<IOCSearch />} />
+          <Route path="mitre" element={<MitreMatrix />} />
+          <Route path="analytics" element={<SOCAnalytics />} />
+          <Route path="incidents" element={<Incidents />} />
+          <Route path="assets" element={<Assets />} />
+          <Route path="ai" element={<AIAssistant />} />
         </Route>
 
         {/* Fallback */}

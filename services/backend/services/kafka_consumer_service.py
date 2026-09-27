@@ -82,12 +82,19 @@ async def start_kafka_consumer():
 
 
 async def _persist_alert(threat: dict):
-    """Persist a scored threat as an Alert record."""
+    """Persist a scored threat as an Alert record and upsert IOC."""
     try:
         async with AsyncSessionLocal() as session:
             alert = Alert(
                 id=str(uuid.uuid4()),
                 log_id=threat.get("log_id"),
+                event_id=threat.get("event_id") or threat.get("log_id"),
+                environment=threat.get("environment", "SIMULATED"),
+                detection_source=threat.get("detection_source", "simulator"),
+                event_type=threat.get("event_type", "intrusion"),
+                accuracy_radius_km=threat.get("accuracy_radius_km"),
+                raw_event=threat.get("raw_event"),
+                status="NEW",
                 timestamp=datetime.fromisoformat(
                     threat.get("timestamp", datetime.now(timezone.utc).isoformat())
                 ),
@@ -113,6 +120,69 @@ async def _persist_alert(threat: dict):
                 top_features=threat.get("top_features"),
             )
             session.add(alert)
+
+            # Auto-upsert extracted IOC into iocs table
+            await _upsert_ioc(session, threat)
+
             await session.commit()
     except Exception as e:
         logger.error(f"Failed to persist alert: {e}")
+
+
+async def _upsert_ioc(session: AsyncSession, threat: dict):
+    """Upsert source IP as an IOC record in the iocs table."""
+    ip = threat.get("src_ip")
+    if not ip or ip in ("0.0.0.0", "127.0.0.1"):
+        return
+
+    from models.ioc import IOC
+    from sqlalchemy import select
+
+    ioc = (await session.execute(
+        select(IOC).where(IOC.ioc_value == ip)
+    )).scalars().first()
+
+    now = datetime.now(timezone.utc)
+    threat_level = threat.get("threat_level", "UNKNOWN")
+    score = threat.get("threat_score", 0)
+
+    if ioc:
+        ioc.hit_count += 1
+        ioc.last_seen = now
+        ioc.risk_score = max(ioc.risk_score, score)
+        if score >= 80:
+            ioc.threat_level = "CRITICAL"
+            ioc.reputation = "malicious"
+        elif score >= 60 and ioc.threat_level != "CRITICAL":
+            ioc.threat_level = "HIGH"
+            ioc.reputation = "suspicious"
+        if threat.get("geo_country") and not ioc.geo_country:
+            ioc.geo_country = threat.get("geo_country")
+            ioc.geo_city = threat.get("geo_city")
+            ioc.geo_lat = threat.get("geo_lat")
+            ioc.geo_lon = threat.get("geo_lon")
+            ioc.accuracy_radius_km = threat.get("accuracy_radius_km")
+        if threat.get("mitre_technique"):
+            mitre_list = list(ioc.related_mitre or [])
+            if threat["mitre_technique"] not in mitre_list:
+                mitre_list.append(threat["mitre_technique"])
+                ioc.related_mitre = mitre_list
+    else:
+        ioc = IOC(
+            ioc_value=ip,
+            ioc_type="ipv6" if ":" in ip else "ipv4",
+            threat_level=threat_level,
+            reputation="malicious" if score >= 80 else "suspicious" if score >= 60 else "clean",
+            risk_score=score,
+            first_seen=now,
+            last_seen=now,
+            hit_count=1,
+            geo_country=threat.get("geo_country"),
+            geo_city=threat.get("geo_city"),
+            geo_lat=threat.get("geo_lat"),
+            geo_lon=threat.get("geo_lon"),
+            accuracy_radius_km=threat.get("accuracy_radius_km"),
+            related_mitre=[threat["mitre_technique"]] if threat.get("mitre_technique") else [],
+            tags=["auto-extracted", threat.get("environment", "SIMULATED").lower()],
+        )
+        session.add(ioc)

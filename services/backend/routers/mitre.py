@@ -83,3 +83,37 @@ async def list_tactics(_=Depends(get_current_user)):
     """List all MITRE ATT&CK tactics."""
     data = _load_mitre()
     return {"tactics": data.get("tactics", [])}
+
+
+@router.get("/heatmap")
+async def get_mitre_heatmap(
+    hours: int = 168,
+    _=Depends(get_current_user),
+):
+    """
+    Return technique usage frequency from the alerts DB.
+    Used to color the interactive MITRE ATT&CK matrix.
+    """
+    import os, sys
+    sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+
+    from core.database import AsyncSessionLocal
+    from models.alert import Alert
+    from sqlalchemy import select, func, desc
+    from datetime import datetime, timedelta, timezone
+
+    since = datetime.now(timezone.utc) - timedelta(hours=hours)
+
+    async with AsyncSessionLocal() as db:
+        result = await db.execute(
+            select(Alert.mitre_technique, func.count(Alert.id).label("count"))
+            .where(Alert.timestamp >= since, Alert.mitre_technique.is_not(None))
+            .group_by(Alert.mitre_technique)
+            .order_by(desc("count"))
+        )
+        rows = result.all()
+
+    return {
+        "hours": hours,
+        "heatmap": {r[0]: r[1] for r in rows},
+    }

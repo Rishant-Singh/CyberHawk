@@ -3,7 +3,8 @@ xgboost==2.0.3
 numpy==1.26.3
 pandas==2.1.4
 joblib==1.3.2
-torch==2.2.0
+# CPU-only torch — avoids downloading 3GB of NVIDIA CUDA libraries
+torch==2.2.0+cpu
 confluent-kafka==2.3.0
 fastapi==0.109.0
 uvicorn[standard]==0.27.0

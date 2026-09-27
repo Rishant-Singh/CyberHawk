@@ -139,7 +139,7 @@ services:
       KAFKA_RAW_TOPIC: raw-logs
       KAFKA_SCORED_TOPIC: scored-threats
       KAFKA_GROUP_ID: cti-ml-group
-      POSTGRES_URL: postgresql+asyncpg://cti_user:cti_secure_pass_change_me@postgres:5432/cti_db
+      POSTGRES_URL: postgresql+asyncpg://${POSTGRES_USER:-cti_user}:${POSTGRES_PASSWORD:-cti_secure_pass_change_me}@postgres:5432/${POSTGRES_DB:-cti_db}
       ELASTICSEARCH_URL: http://elasticsearch:9200
       MODELS_DIR: /app/models/saved
       ANOMALY_THRESHOLD: "0.65"
@@ -199,7 +199,7 @@ services:
     container_name: cti_backend
     restart: unless-stopped
     environment:
-      POSTGRES_URL: postgresql+asyncpg://cti_user:cti_secure_pass_change_me@postgres:5432/cti_db
+      POSTGRES_URL: postgresql+asyncpg://${POSTGRES_USER:-cti_user}:${POSTGRES_PASSWORD:-cti_secure_pass_change_me}@postgres:5432/${POSTGRES_DB:-cti_db}
       ELASTICSEARCH_URL: http://elasticsearch:9200
       KAFKA_BOOTSTRAP_SERVERS: kafka:29092
       KAFKA_SCORED_TOPIC: scored-threats
@@ -207,10 +207,11 @@ services:
       JWT_SECRET_KEY: ${JWT_SECRET_KEY:-super-secret-jwt-key-change-in-production}
       JWT_ALGORITHM: HS256
       ACCESS_TOKEN_EXPIRE_MINUTES: "60"
-      CORS_ORIGINS: '["http://localhost:3000","http://frontend:3000"]'
+      CORS_ORIGINS: '["http://localhost:3000","http://frontend:3000","http://localhost:80"]'
       ADMIN_EMAIL: ${ADMIN_EMAIL:-admin@cti.local}
       ADMIN_PASSWORD: ${ADMIN_PASSWORD:-Admin@CTI2024!}
       ADMIN_USERNAME: ${ADMIN_USERNAME:-admin}
+      GEMINI_API_KEY: ${GEMINI_API_KEY:-}
     ports:
       - "8000:8000"
     depends_on:

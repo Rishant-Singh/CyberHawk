@@ -12,7 +12,7 @@ from fastapi.middleware.trustedhost import TrustedHostMiddleware
 
 from core.config import settings
 from core.database import init_db
-from routers import auth, logs, alerts, threats, health, mitre
+from routers import auth, logs, alerts, threats, health, mitre, ioc, incidents, assets, soc_analytics, ai_assistant
 from websocket.ws_router import ws_router
 from services.websocket_manager import manager
 from services.kafka_consumer_service import start_kafka_consumer
@@ -66,12 +66,17 @@ app.add_middleware(
 )
 
 # ── Routers ───────────────────────────────────────────────────────────────────
-app.include_router(auth.router,    prefix="/api/auth",    tags=["Authentication"])
-app.include_router(logs.router,    prefix="/api/logs",    tags=["Logs"])
-app.include_router(alerts.router,  prefix="/api/alerts",  tags=["Alerts"])
-app.include_router(threats.router, prefix="/api/threats", tags=["Threats"])
-app.include_router(health.router,  prefix="/api/health",  tags=["Health"])
-app.include_router(mitre.router,   prefix="/api/mitre",   tags=["MITRE ATT&CK"])
+app.include_router(auth.router,          prefix="/api/auth",       tags=["Authentication"])
+app.include_router(logs.router,          prefix="/api/logs",       tags=["Logs"])
+app.include_router(alerts.router,        prefix="/api/alerts",     tags=["Alerts"])
+app.include_router(threats.router,       prefix="/api/threats",    tags=["Threats"])
+app.include_router(health.router,        prefix="/api/health",     tags=["Health"])
+app.include_router(mitre.router,         prefix="/api/mitre",      tags=["MITRE ATT&CK"])
+app.include_router(ioc.router,           prefix="/api/ioc",        tags=["IOC Search"])
+app.include_router(incidents.router,     prefix="/api/incidents",  tags=["Incidents"])
+app.include_router(assets.router,        prefix="/api/assets",     tags=["Asset Inventory"])
+app.include_router(soc_analytics.router, prefix="/api/analytics",  tags=["SOC Analytics"])
+app.include_router(ai_assistant.router,  prefix="/api/ai",         tags=["AI Assistant"])
 app.include_router(ws_router)  # WebSocket at /ws/live
 
 

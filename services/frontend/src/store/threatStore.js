@@ -3,7 +3,7 @@ import { create } from 'zustand'
 const MAX_LIVE_THREATS = 200
 
 const useThreatStore = create((set, get) => ({
-  // Auth
+  // ── Auth ────────────────────────────────────────────────────────────────────
   user: null,
   accessToken: localStorage.getItem('cti_token') || null,
   isAuthenticated: !!localStorage.getItem('cti_token'),
@@ -14,10 +14,13 @@ const useThreatStore = create((set, get) => ({
   },
   logout: () => {
     localStorage.removeItem('cti_token')
-    set({ user: null, accessToken: null, isAuthenticated: false, liveThreats: [] })
+    set({
+      user: null, accessToken: null, isAuthenticated: false,
+      liveThreats: [], incidents: [], assets: [], aiMessages: [],
+    })
   },
 
-  // Live threats (from WebSocket)
+  // ── Live threats (from WebSocket) ─────────────────────────────────────────
   liveThreats: [],
   totalThreatsDetected: 0,
   criticalCount: 0,
@@ -38,7 +41,7 @@ const useThreatStore = create((set, get) => ({
     })
   },
 
-  // Current threat score (rolling average of last 20)
+  // ── Current threat score (rolling average of last 20) ─────────────────────
   currentThreatScore: 0,
   updateThreatScore: () => {
     const { liveThreats } = get()
@@ -48,31 +51,67 @@ const useThreatStore = create((set, get) => ({
     set({ currentThreatScore: Math.round(avg) })
   },
 
-  // Selected alert for drill-down
+  // ── Selected alert for drill-down ─────────────────────────────────────────
   selectedAlert: null,
   setSelectedAlert: (alert) => set({ selectedAlert: alert }),
 
-  // Network graph data
+  // ── Network graph data ────────────────────────────────────────────────────
   networkNodes: [],
   networkEdges: [],
   setNetworkGraph: (nodes, edges) => set({ networkNodes: nodes, networkEdges: edges }),
 
-  // System health
+  // ── System health ─────────────────────────────────────────────────────────
   systemHealth: null,
   setSystemHealth: (health) => set({ systemHealth: health }),
 
-  // WebSocket status
+  // ── WebSocket status ──────────────────────────────────────────────────────
   wsConnected: false,
   setWsConnected: (connected) => set({ wsConnected: connected }),
 
-  // Heatmap data
+  // ── Heatmap data ──────────────────────────────────────────────────────────
   heatmapData: [],
   setHeatmapData: (data) => set({ heatmapData: data }),
 
-  // Alerts list
+  // ── Alerts list ───────────────────────────────────────────────────────────
   alerts: [],
   alertsTotal: 0,
   setAlerts: (alerts, total) => set({ alerts, alertsTotal: total }),
+
+  // ── Incidents ─────────────────────────────────────────────────────────────
+  incidents: [],
+  incidentsTotal: 0,
+  setIncidents: (incidents, total) => set({ incidents, incidentsTotal: total }),
+
+  selectedIncident: null,
+  setSelectedIncident: (incident) => set({ selectedIncident: incident }),
+
+  // ── Assets ────────────────────────────────────────────────────────────────
+  assets: [],
+  assetsTotal: 0,
+  setAssets: (assets, total) => set({ assets, assetsTotal: total }),
+
+  // ── IOC Search ────────────────────────────────────────────────────────────
+  iocResults: null,
+  iocQuery: '',
+  setIocResults: (results, query) => set({ iocResults: results, iocQuery: query }),
+  clearIocResults: () => set({ iocResults: null, iocQuery: '' }),
+
+  // ── AI Assistant ──────────────────────────────────────────────────────────
+  aiMessages: [],
+  aiLoading: false,
+  addAiMessage: (msg) => set((state) => ({ aiMessages: [...state.aiMessages, msg] })),
+  setAiLoading: (loading) => set({ aiLoading: loading }),
+  clearAiChat: () => set({ aiMessages: [] }),
+
+  // ── SOC Analytics ─────────────────────────────────────────────────────────
+  analyticsOverview: null,
+  analyticsTrend: [],
+  setAnalyticsOverview: (data) => set({ analyticsOverview: data }),
+  setAnalyticsTrend: (data) => set({ analyticsTrend: data }),
+
+  // ── MITRE Heatmap ─────────────────────────────────────────────────────────
+  mitreHeatmap: {},
+  setMitreHeatmap: (data) => set({ mitreHeatmap: data }),
 }))
 
 export default useThreatStore

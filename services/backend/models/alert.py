@@ -52,7 +52,17 @@ class Alert(Base):
     recommendations: Mapped[list | None] = mapped_column(JSON, nullable=True)
     top_features: Mapped[list | None] = mapped_column(JSON, nullable=True)
 
-    # Status
+    # Status & Normalization
+    environment: Mapped[str] = mapped_column(
+        String(20), default="SIMULATED", nullable=False, index=True
+    )  # SIMULATED | LAB | OBSERVED
+    detection_source: Mapped[str | None] = mapped_column(String(50), default="simulator", nullable=True, index=True)
+    event_id: Mapped[str | None] = mapped_column(String(64), nullable=True, index=True)
+    event_type: Mapped[str | None] = mapped_column(String(50), default="intrusion", nullable=True)
+    accuracy_radius_km: Mapped[float | None] = mapped_column(Float, nullable=True)
+    raw_event: Mapped[dict | None] = mapped_column(JSON, nullable=True)
+    status: Mapped[str] = mapped_column(String(20), default="NEW", nullable=False, index=True)
+
     is_acknowledged: Mapped[bool] = mapped_column(Boolean, default=False)
     acknowledged_by: Mapped[str | None] = mapped_column(String(36), nullable=True)
     acknowledged_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)

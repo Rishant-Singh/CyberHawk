@@ -81,7 +81,14 @@ def extract_features(log: dict) -> dict[str, Any]:
     return {
         # Metadata (not used for ML)
         "log_id": log.get("id"),
+        "event_id": log.get("event_id") or log.get("id"),
         "timestamp": log.get("timestamp"),
+        "environment": log.get("environment", "SIMULATED"),
+        "detection_source": log.get("detection_source", "simulator"),
+        "event_type": log.get("event_type", "intrusion"),
+        "signature": log.get("signature"),
+        "accuracy_radius_km": log.get("accuracy_radius_km"),
+        "raw_event": log.get("raw_event"),
         "src_ip": src_ip,
         "dst_ip": log.get("dst_ip"),
         "src_port": log.get("src_port"),

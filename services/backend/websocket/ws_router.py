@@ -22,9 +22,9 @@ async def websocket_live(
     """
     WebSocket endpoint for real-time threat streaming.
     Requires a valid JWT token as query parameter.
-    
+
     Connect: ws://localhost:8000/ws/live?token=<access_token>
-    
+
     Message types received:
     - THREAT_EVENT: New threat detected
     - SYSTEM_HEALTH: System metrics update
@@ -36,7 +36,8 @@ async def websocket_live(
         if not user_id:
             await websocket.close(code=4001, reason="Invalid token")
             return
-    except Exception:
+    except Exception as e:
+        print(f"WebSocket authentication failed: {e}")
         await websocket.close(code=4001, reason="Authentication failed")
         return
 
@@ -44,14 +45,18 @@ async def websocket_live(
     await manager.connect(websocket, room="live")
 
     # Send welcome message
-    await websocket.send_text(json.dumps({
-        "type": "CONNECTED",
-        "data": {
-            "message": "Connected to CTI real-time threat stream",
-            "user_id": user_id,
-            "clients": manager.connection_count,
-        }
-    }))
+    await websocket.send_text(
+        json.dumps(
+            {
+                "type": "CONNECTED",
+                "data": {
+                    "message": "Connected to CTI real-time threat stream",
+                    "user_id": user_id,
+                    "clients": manager.connection_count,
+                },
+            }
+        )
+    )
 
     try:
         while True:

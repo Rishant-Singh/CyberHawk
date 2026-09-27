@@ -28,6 +28,89 @@ const navItems = [
     ),
     label: 'Alerts',
   },
+  {
+    to: '/map',
+    id: 'nav-attack-map',
+    icon: (
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
+        <circle cx="12" cy="12" r="10" />
+        <line x1="2" y1="12" x2="22" y2="12" />
+        <path d="M12 2a15.3 15.3 0 010 20M12 2a15.3 15.3 0 000 20" />
+      </svg>
+    ),
+    label: 'Global Threat Map',
+  },
+  {
+    to: '/ioc',
+    id: 'nav-ioc',
+    icon: (
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
+        <circle cx="11" cy="11" r="8" />
+        <line x1="21" y1="21" x2="16.65" y2="16.65" />
+      </svg>
+    ),
+    label: 'IOC Search',
+  },
+  {
+    to: '/mitre',
+    id: 'nav-mitre',
+    icon: (
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
+        <rect x="3" y="3" width="18" height="18" rx="2" />
+        <path d="M9 3v18M15 3v18M3 9h18M3 15h18" />
+      </svg>
+    ),
+    label: 'MITRE Matrix',
+  },
+  {
+    to: '/analytics',
+    id: 'nav-analytics',
+    icon: (
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
+        <line x1="18" y1="20" x2="18" y2="10" />
+        <line x1="12" y1="20" x2="12" y2="4" />
+        <line x1="6" y1="20" x2="6" y2="14" />
+      </svg>
+    ),
+    label: 'SOC Analytics',
+  },
+  {
+    to: '/incidents',
+    id: 'nav-incidents',
+    icon: (
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
+        <path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z" />
+        <polyline points="14 2 14 8 20 8" />
+        <line x1="16" y1="13" x2="8" y2="13" />
+        <line x1="16" y1="17" x2="8" y2="17" />
+      </svg>
+    ),
+    label: 'Incidents',
+  },
+  {
+    to: '/assets',
+    id: 'nav-assets',
+    icon: (
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
+        <rect x="2" y="3" width="20" height="14" rx="2" />
+        <line x1="8" y1="21" x2="16" y2="21" />
+        <line x1="12" y1="17" x2="12" y2="21" />
+      </svg>
+    ),
+    label: 'Asset Inventory',
+  },
+  {
+    to: '/ai',
+    id: 'nav-ai',
+    icon: (
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
+        <path d="M12 2a10 10 0 100 20 10 10 0 000-20z" />
+        <path d="M12 8v4l3 3" />
+      </svg>
+    ),
+    label: 'AI Assistant',
+    highlight: true, // special glow for AI nav item
+  },
 ]
 
 export default function Sidebar() {
@@ -58,7 +141,7 @@ export default function Sidebar() {
           <div className="text-cyber-green font-['Orbitron',sans-serif] font-bold text-xs tracking-widest uppercase">
             CTI Platform
           </div>
-          <div className="text-gray-600 text-[10px] font-mono mt-0.5">Command Center</div>
+          <div className="text-gray-600 text-[10px] font-mono mt-0.5">CyberHawk</div>
         </div>
       </div>
 
@@ -104,7 +187,7 @@ export default function Sidebar() {
       )}
 
       {/* Navigation */}
-      <nav className="flex-1 py-3 space-y-1 px-2">
+      <nav className="flex-1 py-3 space-y-0.5 px-2 overflow-y-auto overflow-x-hidden">
         {navItems.map((item) => (
           <NavLink
             key={item.to}
@@ -115,7 +198,9 @@ export default function Sidebar() {
               `flex items-center gap-3 px-2.5 py-2.5 rounded transition-all duration-150 group/link ${
                 isActive
                   ? 'text-cyber-green bg-cyber-green/10 border border-cyber-green/30'
-                  : 'text-gray-500 hover:text-cyber-green hover:bg-cyber-green/5 border border-transparent'
+                  : item.highlight
+                    ? 'text-purple-400 hover:text-purple-300 hover:bg-purple-400/8 border border-transparent'
+                    : 'text-gray-500 hover:text-cyber-green hover:bg-cyber-green/5 border border-transparent'
               }`
             }
           >
